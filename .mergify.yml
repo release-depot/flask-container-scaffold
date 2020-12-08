@@ -1,0 +1,11 @@
+pull_request_rules:
+- actions:
+    merge:
+      method: rebase
+      rebase_fallback: merge
+      strict: true
+  conditions:
+  - label!=WIP
+  - '#approved-reviews-by>=1'
+  - check-success=run tests
+  name: default
