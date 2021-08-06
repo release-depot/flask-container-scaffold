@@ -39,6 +39,48 @@ completely flexible, and can contain any additional configuration your
 application may need.  It is assumed this is a yaml file.  The contents of
 the file are parsed and stored in app.config.default_params.
 
+After the application is initialized, the custom formatter can be
+configured at any point in the code before logging is called. As an
+example:
+
+    from logging.config import dictConfig
+
+    from flask_container_scaffold.logging import FlaskRequestFormatter
+
+    dictConfig({
+        'version': 1,
+        'formatters': {
+            'default': {
+                '()': FlaskRequestFormatter,
+                'format': '[%(asctime)s] %(remote_addr)s '
+                '%(levelname)s in %(module)s: %(message)s',
+            },
+        },
+        'handlers': {
+            'wsgi': {
+                'class': 'logging.StreamHandler',
+                'stream': 'ext://flask.logging.wsgi_errors_stream',
+                'formatter': 'default'
+            },
+            'file': {
+                'class': 'logging.handlers.RotatingFileHandler',
+                'filename': '/var/log/myapp.log',
+                'backupCount': 3,
+                'maxBytes': 15728640,  # 1024 * 1024 * 15
+                'formatter': 'default',
+            },
+        },
+        'loggers': {
+            'main': {
+                'level': 'INFO',
+            },
+        },
+        'root': {
+            'level': 'WARNING',
+            'handlers': ['wsgi', 'file'],
+        },
+    })
+
 ### Development
 
 #### Setting up a development environment
