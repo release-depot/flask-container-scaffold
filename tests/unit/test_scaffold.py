@@ -38,10 +38,10 @@ def test_hash_with_config(mock_defaults_file):
     """
     url = 'http://foo.com/cgit'
     app = AppScaffold(config={
-                              'TESTING': True,
-                              'GIT_BASE_URL': url,
-                              'DEFAULTS_FILE': mock_defaults_file
-                             }).app
+        'TESTING': True,
+        'GIT_BASE_URL': url,
+        'DEFAULTS_FILE': mock_defaults_file
+    }).app
     assert app is not None
     assert app.config.get('GIT_BASE_URL') == url
     assert app.config.get('DEFAULTS_FILE') == mock_defaults_file
