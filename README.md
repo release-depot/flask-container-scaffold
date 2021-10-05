@@ -1,5 +1,8 @@
 # flask-container-scaffold
 
+[![pypi](https://img.shields.io/pypi/v/flask-container-scaffold.svg)](https://pypi.python.org/pypi/flask-container-scaffold)
+[![tests](https://github.com/release-depot/flask-container-scaffold/actions/workflows/test.yml/badge.svg)](https://github.com/release-depot/flask-container-scaffold/actions/workflows/test.yml)
+
 A common base layer for Flask applications that are deployed in containers.
 
 This project is still in a very early stage, being pulled out from a flask-

@@ -5,10 +5,11 @@ pull_request_rules:
       rebase_fallback: merge
       strict: true
   conditions:
-  - label!=WIP
-  - '#approved-reviews-by>=1'
-  - check-success=test (3.6)
-  - check-success=test (3.7)
-  - check-success=test (3.8)
-  - check-success=test (3.9)
+    - label!=WIP
+    - '#approved-reviews-by>=2'
+    - check-success=flake8
+    - check-success=test (3.6)
+    - check-success=test (3.7)
+    - check-success=test (3.8)
+    - check-success=test (3.9)
   name: default
