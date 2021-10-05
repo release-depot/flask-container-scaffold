@@ -2,7 +2,7 @@ name: Upload Package to Pypi and TestPyPI
 
 on:
   push:
-    branches: [ master ]
+    branches: [ main ]
   workflow_dispatch:
 
 jobs:
