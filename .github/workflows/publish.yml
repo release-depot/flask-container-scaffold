@@ -1,29 +1,45 @@
-name: Upload Package to Pypi
+name: Upload Package to Pypi and TestPyPI
 
 on:
-  release:
+  push:
+    branches: [ master ]
   workflow_dispatch:
 
 jobs:
   deploy:
-
     runs-on: ubuntu-latest
 
     steps:
     - uses: actions/checkout@v2
+      with:
+        fetch-depth: 0
     - name: Set up Python
       uses: actions/setup-python@v2
       with:
-        python-version: '3.x'
+        python-version: '3.9'
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
         pip install -r dist-requirements.txt
-    - name: Build and publish
-      env:
-        TWINE_USERNAME: ${{ secrets.PYPI_USERNAME }}
-        TWINE_PASSWORD: ${{ secrets.PYPI_PASSWORD }}
+    - name: Create Environment Variable For Test PyPI Builds
+      if: startsWith(github.ref, 'refs/tags/') != true
+      shell: bash
       run: |
-        python -m build
-        twine check dist/*
-        twine upload dist/*
+        echo 'SCM_NO_LOCAL_SCHEME=true' >> $GITHUB_ENV
+    - name: Check environment variable
+      run: echo "${{ env.SCM_NO_LOCAL_SCHEME}}"
+    - name: Build package
+      run: python -m build
+    - name: Publish to Test PyPI
+      if: startsWith(github.ref, 'refs/tags/') != true
+      uses: pypa/gh-action-pypi-publish@master
+      with:
+        user: __token__
+        password: ${{ secrets.TEST_PYPI_TOKEN }}
+        repository_url: https://test.pypi.org/legacy/
+    - name: Publish to PyPI
+      uses: pypa/gh-action-pypi-publish@master
+      if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags')
+      with:
+        user: __token__
+        password: ${{ secrets.PYPI_TOKEN }}
