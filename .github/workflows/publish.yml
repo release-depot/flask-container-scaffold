@@ -3,6 +3,8 @@ name: Upload Package to Pypi and TestPyPI
 on:
   push:
     branches: [ main ]
+    tags:
+      - '*'
   workflow_dispatch:
 
 jobs:
