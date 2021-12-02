@@ -2,76 +2,96 @@ import os
 
 from flask import Flask
 
-from flask_container_scaffold.util import load_yaml
+from flask_container_scaffold.app_configurator import AppConfigurator
 
 
 class AppScaffold(object):
 
     def __init__(self, app=None,
-                 name=__name__, config=None):
+                 name=__name__, config=None,
+                 settings_required=False,
+                 instance_path=None,
+                 instance_relative_config=True):
         """
         This class provides a way to dynamically configure a Flask application.
 
-        :param app: An existing Flask application, if passed, otherwise we will
-                    create a new one
-        :param name: The name of the application, defaults to __name__.
-        :param config: A dict of configuration details. This can include
+        :param app obj: An existing Flask application, if passed, otherwise we
+                    will create a new one
+        :param name str: The name of the application, defaults to __name__.
+        :param config dict: A dict of configuration details. This can include
                        standard Flask configuration keys, like 'TESTING', or
                        custom keys (currently limited to a set list) to make
                        them available to the application during runtime
+        :param settings_required bool: Whether your app requires certain
+                        settings be specified in a settings.cfg file
+        :param instance_path str: Passthrough parameter to flask. An
+                    alternative instance path for the application. By default
+                    the folder 'instance' next to the package or module is
+                    assumed to be the instance path.
+        :param instance_relative_config bool: Passthrough parameter to flask.
+                    If set to True relative filenames for loading the config
+                    are assumed to be relative to the instance path instead of
+                    the application root.
 
         """
+        # TODO: Consider taking **kwargs here, so we can automatically support
+        # all params the flask object takes, and just pass them through.  Keep
+        # the ones we already have, as they are needed for the current code to
+        # work.
         Flask.jinja_options = dict(Flask.jinja_options, trim_blocks=True,
                                    lstrip_blocks=True)
-        self.app = app or Flask(name, instance_relative_config=True)
+        self.app = (app or
+                    Flask(name,
+                          instance_relative_config=instance_relative_config,
+                          instance_path=instance_path))
         self.config = config
+        self.silent = not settings_required
+        self.relative = instance_relative_config
         self._init_app()
 
     def _init_app(self):
-        self._setup_instance_folder()
-        self._configure_app()
+        self._load_flask_settings()
+        self._load_custom_settings()
 
-    # NOTE: This method is old, and likely to go away, unless
-    # we make it for dev mode only, as a production app should not
-    # need to create folders.
-    def _setup_instance_folder(self):
-        # Ensure the instance folder exists
-        try:
-            os.makedirs(self.app.instance_path)
-        except OSError:
-            pass
-
-    def _configure_app(self):
-        if self.config is None:
-            # load the instance config, if it exists
-            self.app.config.from_pyfile('settings.cfg', silent=True)
-        else:
+    def _load_flask_settings(self):
+        """
+        This loads the 'core' settings, ie, anything you could set directly
+        on a Flask app. These can be specified in the following order, each
+        overriding the last, if specified:
+        - via config mapping
+        - via Flask settings.cfg file
+        - via environment variable 'FLASK_SETTINGS'
+        """
+        config_not_loaded = True
+        if self.config is not None:
             # load the config if passed in
             self.app.config.from_mapping(self.config)
-            # Next, load from override file, if specified
-        if os.environ.get('SETTINGS'):
-            self.app.config.from_envvar('SETTINGS')
-        # Next, load env vars directly, which will override
-        # any previous settings.
-        self.setup_core_config_from_env()
-        # Loop again, making sure everything in env_list is set somehow
-        # on the config object.
-        self.setup_core_config_from_env(verify=True)
-        # Load the defaults yaml file
-        default_conf = (self.app.config.get('DEFAULTS_FILE') or False)
-        if default_conf:
-            self.app.config.update(
-                {'default_params': load_yaml(default_conf)})
+            config_not_loaded = False
+        # load the instance config, if it exists and/or is required
+        try:
+            self.app.config.from_pyfile('settings.cfg', silent=self.silent)
+            config_not_loaded = False
+        except Exception:
+            config_not_loaded = True
+        # Load any additional config specified in the FLASK_SETTINGS file,
+        # if it exists. We only want to fail in the case where settings are
+        # required by the app.
+        if ((config_not_loaded and not self.silent) or
+                os.environ.get('FLASK_SETTINGS')):
+            self.app.config.from_envvar('FLASK_SETTINGS')
 
-    def get_config_list(self):
-        # TODO: pull this from a file or take list instead
-        config_list = ['GIT_BASE_URL', 'DEFAULTS_FILE']
-        return config_list
-
-    def setup_core_config_from_env(self, verify=False):
-        # loop through the list, setting each value from env if it exists
-        for i in self.get_config_list():
-            if os.environ.get(i):
-                self.app.config[i] = os.environ.get(i)
-            if verify and not self.app.config.get(i):
-                raise ValueError(f"No {i} set for Flask application")
+    def _load_custom_settings(self):
+        """
+        Load any custom configuration for the app from:
+        - app.config['CUSTOM_SETTINGS']
+        - environment variable 'CUSTOM_SETTINGS'
+        """
+        configurator = AppConfigurator(self.app, self.relative)
+        if self.app.config.get('CUSTOM_SETTINGS') is not None:
+            # load the config if passed in
+            custom = self.app.config.get('CUSTOM_SETTINGS')
+            configurator.parse(custom)
+        # Next, load from override file, if specified
+        if os.environ.get('CUSTOM_SETTINGS') is not None:
+            custom = os.environ.get('CUSTOM_SETTINGS')
+            configurator.parse(custom)

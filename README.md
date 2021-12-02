@@ -27,20 +27,64 @@ application, and allows for the user to then do any further setup required once
 the configuration is in place.  It is called from within your app factory
 function like this:
 
-    app = AppScaffold(name=__name__, test_config=test_config).app
+    app = AppScaffold(name=__name__, config=config).app
     app.register_blueprint(foo.bp) # or whatever else you still need to do
 
-The library currently has some hard-coded assumptions based on the project it
-was originally used in, which will become more flexible over time.  The first is
-that there is either a settings.cfg file in the standard flask instance folder,
-or that there is a SETTINGS environment variable that points to a valid cfg
-file.  The values currently supported in this file are GIT_BASE_URL and
-DEFAULTS_FILE.  This is something that will be enhanced very soon, but is what
-the original application used. The next assumption is that DEFAULTS_FILE is
-specified in settings.cfg, or as an environment variable.  This file is already
-completely flexible, and can contain any additional configuration your
-application may need.  It is assumed this is a yaml file.  The contents of
-the file are parsed and stored in app.config.default_params.
+The library supports two levels of configuration.
+
+#### Level 1: Flask Settings
+
+The first is the standard flask configuration that can be used by default, but
+with a bit of extra structure.  You can specify this configuration using any or
+all of the following options:
+
+1. Pass in the Flask config to AppScaffold via the config parameter (this is a
+   dictionary).
+2. Via a standard flask settings.cfg file.  Flask will look for this in the
+   instance folder, which you can specify via the instance_path parameter to
+   AppScaffold if it is not in the default location ('instance' within the app).
+3. Via a FLASK_SETTINGS environment variable whose value is a path to a valid
+   Flask settings.cfg file. This can be a relative path if the instance_config
+   folder is specified, or can be an absolute path in all cases.
+
+Note that Flask requires all config settings to be in CAPS, otherwise they will
+not be included in the app.config dictionary on initialization.
+
+AppScaffold will look for each of the items above, and they will be set in the
+same order, if found.  So, for example, if you set:
+
+    config= {'FOO': 'bar'}
+
+when you call AppScaffold, but then have:
+
+    FOO='something else'
+
+in your file specified by the FLASK_SETTINGS environment variable, the latter
+will overwrite the former.
+
+#### Level 2: Custom Settings
+
+Custom settings are meant to be more flexible than the Flask settings, and can
+be in whatever structure makes sense for your application.  These settings are
+found and loaded by AppScaffold when you reference a Flask setting of
+CUSTOM_SETTINGS in any of the following ways:
+
+1. As a key in your config dict passed into AppScaffold
+2. As a key in your settings.cfg file
+3. As an environment variable whose value is a path to a valid file containing
+   your custom configuration. This can be a relative path if the
+   instance_config folder is specified, or can be an absolute path in all cases.
+
+Currently, settings can be configured via a standard cfg file (using
+[ini-file](https://docs.python.org/3/library/configparser.html#supported-ini-file-structure)
+format) or a yaml file (which can end with '.yml' or '.yaml'). These files, in
+turn, can reference additional files if needed.  Sections and structures are
+supported, so long as they can be put into a python dictionary, and will be
+added as-is, without additional formatting of case (which the python
+ConfigParser library does by default). Also, keys can be in whatever case suits
+your needs, which is a difference from the core Flask settings.
+
+### Logger Formatting
 
 After the application is initialized, the custom formatter can be
 configured at any point in the code before logging is called. As an

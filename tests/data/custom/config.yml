@@ -1,0 +1,6 @@
+---
+
+default_params:
+  a_key: 'another value'
+extra_config:
+  important_stuff: 'abc'
