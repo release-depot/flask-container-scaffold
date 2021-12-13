@@ -9,8 +9,8 @@ def load_yaml(filename='config.yml', logger=None):
     Convenience wrapper around toolchest.yaml::parse to allow you to parse a
     file by path+name
 
-    :param filename: A yaml file to be parsed
-    :param logger: Optional logger for potential errors
+    :param str filename: A yaml file to be parsed
+    :param Logger logger: Optional logger for potential errors
     :return: A dictionary formed out of the yaml data
     """
     config = {}
@@ -23,7 +23,7 @@ def load_cfg(conf_file):
     """
     Load a cfg file
 
-    :param conf_file str: A cfg/ini file to be parsed
+    :param str conf_file: A cfg/ini file to be parsed
     :return: A dictionary formed out of the cfg file data
     :raises: configparser.MissingSectionHeaderError, FileNotFoundError
     """

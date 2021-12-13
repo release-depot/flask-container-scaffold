@@ -7,20 +7,20 @@ class FlaskRequestFormatter(logging.Formatter):
     """
     A Formatter logging class to add IP information to the log records.
 
-    Usage example:
+    Usage example::
 
-    from flask_container_scaffold.logging import FlaskRequestFormatter
+      from flask_container_scaffold.logging import FlaskRequestFormatter
 
-    dictConfig({
-        'version': 1,
-        'formatters': {
-            'default': {
-                '()': FlaskRequestFormatter,
-                'format': '[%(asctime)s] %(remote_addr)s %(levelname)s: %(message)s',
-            },
-        },
-        ...
-    })
+      dictConfig({
+          'version': 1,
+          'formatters': {
+              'default': {
+                  '()': FlaskRequestFormatter,
+                  'format': '[%(asctime)s] %(remote_addr)s %(levelname)s: %(message)s',
+              },
+          },
+          ...
+      })
     """
 
     def get_ip_from_forwarded(self, field):

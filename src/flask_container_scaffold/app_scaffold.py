@@ -15,23 +15,24 @@ class AppScaffold(object):
         """
         This class provides a way to dynamically configure a Flask application.
 
-        :param app obj: An existing Flask application, if passed, otherwise we
-                    will create a new one
-        :param name str: The name of the application, defaults to __name__.
-        :param config dict: A dict of configuration details. This can include
-                       standard Flask configuration keys, like 'TESTING', or
-                       custom keys (currently limited to a set list) to make
-                       them available to the application during runtime
-        :param settings_required bool: Whether your app requires certain
-                        settings be specified in a settings.cfg file
-        :param instance_path str: Passthrough parameter to flask. An
-                    alternative instance path for the application. By default
-                    the folder 'instance' next to the package or module is
-                    assumed to be the instance path.
-        :param instance_relative_config bool: Passthrough parameter to flask.
-                    If set to True relative filenames for loading the config
-                    are assumed to be relative to the instance path instead of
-                    the application root.
+        :param obj app: An existing Flask application, if passed, otherwise we
+            will create a new one
+        :param str name: The name of the application, defaults to __name__.
+        :param dict config: A dict of configuration details. This can include
+            standard Flask configuration keys, like 'TESTING', or
+            'CUSTOM_SETTINGS' (which can be a string referencing a file with custom
+            configuration, or a dictionary containing any values your application
+            may need) to make them available to the application during runtime
+        :param bool settings_required: Whether your app requires certain
+            settings be specified in a settings.cfg file
+        :param str instance_path: Passthrough parameter to flask. An
+            alternative instance path for the application. By default
+            the folder 'instance' next to the package or module is
+            assumed to be the instance path.
+        :param bool instance_relative_config: Passthrough parameter to flask.
+            If set to True relative filenames for loading the config
+            are assumed to be relative to the instance path instead of
+            the application root.
 
         """
         # TODO: Consider taking **kwargs here, so we can automatically support
