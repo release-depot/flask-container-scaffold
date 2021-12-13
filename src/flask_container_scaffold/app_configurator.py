@@ -8,8 +8,8 @@ class AppConfigurator(object):
         This class handles loading and parsing of custom configuration
         for your Flask app.
 
-        :param app obj: An existing Flask application
-        :param relative bool: Whether filenames found in configuration are
+        :param obj app: An existing Flask application
+        :param bool relative: Whether filenames found in configuration are
             assumed to be relative to instance path rather than application
             root.
         """
@@ -20,7 +20,7 @@ class AppConfigurator(object):
         """
         Parse any custom configuration passed in for the app
 
-        :param custom obj: A String or dictionary to parse and add to the
+        :param obj custom: A String or dictionary to parse and add to the
             application config.
         """
         if isinstance(custom, str):

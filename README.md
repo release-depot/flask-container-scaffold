@@ -1,4 +1,4 @@
-# flask-container-scaffold
+## flask-container-scaffold
 
 [![pypi](https://img.shields.io/pypi/v/flask-container-scaffold.svg)](https://pypi.python.org/pypi/flask-container-scaffold)
 [![tests](https://github.com/release-depot/flask-container-scaffold/actions/workflows/test.yml/badge.svg)](https://github.com/release-depot/flask-container-scaffold/actions/workflows/test.yml)
@@ -14,13 +14,13 @@ specify an environment variable that points to a yaml/json file, or some
 filesystem mount that is very different from development.  Externalizing this
 configuration allows for more flexibility in multiple environments.
 
-### Installation
+## Installation
 
 flask-container-scaffold can be installed via pip with:
 
     pip install flask-container-scaffold
 
-### Usage
+## Usage
 
 The library is meant to be used to do the basic configuration of a flask
 application, and allows for the user to then do any further setup required once
@@ -32,7 +32,7 @@ function like this:
 
 The library supports two levels of configuration.
 
-#### Level 1: Flask Settings
+### Level 1: Flask Settings
 
 The first is the standard flask configuration that can be used by default, but
 with a bit of extra structure.  You can specify this configuration using any or
@@ -62,7 +62,7 @@ when you call AppScaffold, but then have:
 in your file specified by the FLASK_SETTINGS environment variable, the latter
 will overwrite the former.
 
-#### Level 2: Custom Settings
+### Level 2: Custom Settings
 
 Custom settings are meant to be more flexible than the Flask settings, and can
 be in whatever structure makes sense for your application.  These settings are
@@ -128,9 +128,9 @@ example:
         },
     })
 
-### Development
+## Development
 
-#### Setting up a development environment
+### Setting up a development environment
 
 You may set up your environment with virtualenv or another preferred tool for
 managing virtual environments, but here are some directions for doing so using
@@ -142,9 +142,14 @@ Next, using it to set up your development environment:
 
     pipenv update -d
 
-If you prefer to use pip directly in your venv, simply specify the
-requirements.txt and test-requirements.txt files.  There is also a
-dist-requirements.txt, if you will be building the project for distribution.
+If you prefer to use pip directly in your venv, specify the following
+requirements files:
+
+  - requirements.txt
+  - test-requirements.txt
+
+There is also a dist-requirements.txt, if you will be building the project
+for distribution.
 
 Any remaining directions will assume you are in your venv, which for pipenv,
 can be activated like this:
@@ -159,7 +164,7 @@ This project attempts to follow most of the suggestions in the [python packaging
 docs](https://packaging.python.org/tutorials/packaging-projects/) while also
 supporting an easy to set up development environment.
 
-#### Building the project
+### Building the project
 
 If you wish to build the project for distribution:
 
