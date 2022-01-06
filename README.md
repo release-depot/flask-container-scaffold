@@ -2,6 +2,7 @@
 
 [![pypi](https://img.shields.io/pypi/v/flask-container-scaffold.svg)](https://pypi.python.org/pypi/flask-container-scaffold)
 [![tests](https://github.com/release-depot/flask-container-scaffold/actions/workflows/test.yml/badge.svg)](https://github.com/release-depot/flask-container-scaffold/actions/workflows/test.yml)
+[![documentation](https://readthedocs.org/projects/flask-container-scaffold/badge/?version=latest)](https://flask-container-scaffold.readthedocs.io/en/latest/?badge=latest)
 
 A common base layer for Flask applications that are deployed in containers.
 
