@@ -2,4 +2,6 @@
 
 default_params:
   a_key: 'some value'
-
+  key_two: 3
+  a_list:
+    - list value

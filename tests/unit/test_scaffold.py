@@ -172,6 +172,9 @@ def test_setting_env_vars_directly_only(mock_custom_settings_file,
             'instance/config.yml')
     assert (scaffold.app.config.get('default_params').get('a_key') ==
             'some value')
+    assert scaffold.app.config.get('default_params').get('key_two') == 3
+    assert (scaffold.app.config.get('default_params').get('a_list') ==
+            ['list value'])
 
 
 def test_valid_instance_configs(mock_instance_folder):

@@ -23,13 +23,11 @@ class AppConfigurator(object):
         :param obj custom: A String or dictionary to parse and add to the
             application config.
         """
-        if isinstance(custom, str):
-            self._parse_conf_item(custom)
-        elif isinstance(custom, dict):
+        if isinstance(custom, dict):
             for key in custom:
                 self.parse(custom[key])
         else:
-            raise TypeError(f"{type(custom)} not currently supported")
+            self._parse_conf_item(custom)
 
     def _parse_conf_item(self, item):
         """
@@ -38,7 +36,10 @@ class AppConfigurator(object):
         function to add the contents of the file to app.config object
         """
         supported_extensions = ['cfg', 'yaml', 'yml']
-        item_type = item.rsplit(".")[-1]
+        if isinstance(item, str):
+            item_type = item.rsplit(".")[-1]
+        else:
+            item_type = 'not a file'
         # If this is a file reference, and we support the type,
         # detect the path, and the read the file and add the contents
         # to the app config.
