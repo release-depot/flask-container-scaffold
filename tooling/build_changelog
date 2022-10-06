@@ -3,8 +3,8 @@ the_dir=$1
 cd $the_dir
 pwd
 # We run the script twice.  First time it to create the base file:
-curl -s "https://raw.githubusercontent.com/release-depot/change/0.14.3/change" |
+curl -s "https://raw.githubusercontent.com/release-depot/change/latest/change" |
 sh -s -- init
 # Second time is to populate it with tag data:
-curl -s "https://raw.githubusercontent.com/release-depot/change/0.14.3/change" |
+curl -s "https://raw.githubusercontent.com/release-depot/change/latest/change" |
 sh -s --
