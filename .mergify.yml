@@ -27,6 +27,5 @@ pull_request_rules:
     actions:
       queue:
         method: rebase
-        rebase_fallback: merge
         update_method: rebase
         name: default
