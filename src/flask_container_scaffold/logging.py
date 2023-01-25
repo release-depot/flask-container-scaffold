@@ -1,6 +1,8 @@
 import logging
 
-from flask import has_request_context, request
+from flask import has_request_context
+
+from flask_container_scaffold.network import get_remote_addr_from_flask
 
 
 class FlaskRequestFormatter(logging.Formatter):
@@ -22,28 +24,14 @@ class FlaskRequestFormatter(logging.Formatter):
           ...
       })
     """
-
-    def get_ip_from_forwarded(self, field):
-        # RFC 7239 defines the following format for the Forwarded field:
-        # for=12.34.56.78;host=example.com;proto=https, for=23.45.67.89
-        # In testing, the first IP has consistently been the real user IP.
-        forwarded = field.split(",")[0]
-        for value in forwarded.split(";"):
-            if value.startswith("for="):
-                return value.split("=")[1]
-        else:
-            return None
-
     def format(self, record):
+        # If the record already has remote_addr, don't override it
+        if hasattr(record, 'remote_addr') and record.remote_addr is not None:
+            return super().format(record)
+
         if has_request_context():
-            # HTTP_FORWARDED seems to be the most reliable way to get the
-            # user real IP.
-            forwarded = request.environ.get('HTTP_FORWARDED')
-            if forwarded:
-                ip = self.get_ip_from_forwarded(forwarded)
-                record.remote_addr = ip or request.remote_addr
-            else:
-                record.remote_addr = request.remote_addr
+            remote_addr = get_remote_addr_from_flask()
+            record.remote_addr = remote_addr
         else:
             record.remote_addr = "-"
 

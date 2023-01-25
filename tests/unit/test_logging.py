@@ -82,3 +82,19 @@ def test_request_formatter_with_malformed_forwarded_field():
     with Flask("test").test_request_context(environ_base=env):
         formatter = FlaskRequestFormatter(FORMAT)
         assert formatter.format(record) == "[1.2.3.4] Test message"
+
+
+def test_request_formatter_with_remote_addr_already_set():
+    """
+    GIVEN a properly initialised FlaskRequestFormatter
+    WHEN it is called with a record that already has remote_addr set
+    THEN the log message contains that preset remote address
+    """
+    env = (("REMOTE_ADDR", "1.2.3.4"),
+           ("HTTP_FORWARDED", "host"),)
+    record = LogRecord('', 1, '', 1, 'Test message', '', None)
+    record.remote_addr = '1.1.1.1'
+
+    with Flask("test").test_request_context(environ_base=env):
+        formatter = FlaskRequestFormatter(FORMAT)
+        assert formatter.format(record) == "[1.1.1.1] Test message"
