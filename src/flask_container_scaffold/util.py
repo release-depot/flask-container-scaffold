@@ -1,6 +1,11 @@
 import configparser
+import json
 
+from flask import request
+from pydantic import ValidationError
 from toolchest.yaml import parse
+
+from flask_container_scaffold.base import BaseApiModel
 
 
 # TODO: extract this method out to toolchest library.
@@ -45,3 +50,33 @@ def _parse_cfg(config):
             settings_dict[key] = config[section][key]
         config_dict.update({section: settings_dict})
     return config_dict
+
+
+def parse_input(logger, obj, default_return=BaseApiModel):
+    """
+    Parses incoming request, returns a serializable object to return
+    to the client in all cases. When there is a failure, the
+    object contains error information.
+    :param Logger logger: Instantiated logger object
+    :param BaseModel obj: An object type based on a pydantic BaseModel to
+                          attempt to parse.
+    :param BaseApiModel default_return: An object type that will be returned if
+                                        validation of obj fails. This object
+                                        must descend from BaseApiModel or
+                                        implement an error field of type str.
+    :returns: Instantiated object of type obj on success, or default_return
+              on failure to parse.
+    """
+    try:
+        if request.is_json:
+            parsed_args = obj.model_validate_json(json.dumps(request.json))
+        else:
+            if request.args:
+                args = request.args
+            else:
+                args = request.form
+            parsed_args = obj.model_validate_json(json.dumps(args.to_dict()))
+    except ValidationError as e:
+        logger.error(f"Validation error is: {e}")
+        parsed_args = default_return(error=str(e.errors()[0]))
+    return parsed_args
