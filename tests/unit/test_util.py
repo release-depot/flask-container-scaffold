@@ -2,7 +2,7 @@ import configparser
 
 import pytest
 
-from flask_container_scaffold.base import BaseApiModel
+from flask_container_scaffold.base import BaseApiView
 from flask_container_scaffold.util import load_cfg, parse_input
 
 
@@ -28,7 +28,7 @@ def test_invalid_cfg_file(mock_extra_settings_file):
         load_cfg(mock_extra_settings_file)
 
 
-class FakeApiModelExtension(BaseApiModel):
+class FakeApiModelExtension(BaseApiView):
     code: int = 1
 
 
@@ -37,21 +37,32 @@ class FakeModel(FakeApiModelExtension):
     name: str
 
 
+class FakeModel2(FakeApiModelExtension):
+    code: int = 0
+    name: str
+    status: str
+
+
 class TestParseInput:
 
     def test_no_data(self, app):
         """
         GIVEN a request with no parameters of any type
         WHEN we call parse_input on that request
-        THEN we get a BaseApiModel returned with a code of 400
+        THEN we get a BaseApiView returned with a code of 400
         AND an error explaining what is wrong
         """
         with app.test_request_context():
             retval = parse_input(app.logger, FakeModel)
-            assert 'Field required' in retval.error
-            assert isinstance(retval, BaseApiModel)
+            assert (len(retval.errors)) == 1
+            assert 'name' in retval.errors
+            assert 'Field required' == retval.errors.get('name')
+            assert isinstance(retval, BaseApiView)
 
-    def test_no_data_custom_return(self, app):
+    @pytest.mark.parametrize("to_parse,required_attrs",
+                             [(FakeModel, ['name']),
+                              (FakeModel2, ['name', 'status'])])
+    def test_no_data_custom_return(self, to_parse, required_attrs, app):
         """
         GIVEN a request with no parameters of any type
         WHEN we call parse_input on that request with a custom default_return
@@ -59,10 +70,13 @@ class TestParseInput:
         AND an error explaining what is wrong
         """
         with app.test_request_context():
-            retval = parse_input(app.logger, FakeModel, FakeApiModelExtension)
+            retval = parse_input(app.logger, to_parse, FakeApiModelExtension)
             assert retval.code == 1
-            assert 'Field required' in retval.error
-            assert isinstance(retval, BaseApiModel)
+            assert retval.msg == f"Errors detected: {len(required_attrs)}"
+            for missing_attr in retval.errors:
+                assert missing_attr in required_attrs
+                assert retval.errors.get(missing_attr) == 'Field required'
+            assert isinstance(retval, BaseApiView)
 
     @pytest.mark.parametrize("input_type,input_val",
                              [('json', {'name': 'foo'}),
@@ -80,6 +94,6 @@ class TestParseInput:
         with context.get(input_type):
             retval = parse_input(app.logger, FakeModel)
             assert retval.code == 0
-            assert retval.error == ''
+            assert retval.errors == {}
             assert retval.name == 'foo'
             assert isinstance(retval, FakeModel)
