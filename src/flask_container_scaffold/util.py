@@ -5,7 +5,7 @@ from flask import request
 from pydantic import ValidationError
 from toolchest.yaml import parse
 
-from flask_container_scaffold.base import BaseApiModel
+from flask_container_scaffold.base import BaseApiView
 
 
 # TODO: extract this method out to toolchest library.
@@ -52,7 +52,7 @@ def _parse_cfg(config):
     return config_dict
 
 
-def parse_input(logger, obj, default_return=BaseApiModel):
+def parse_input(logger, obj, default_return=BaseApiView):
     """
     Parses incoming request, returns a serializable object to return
     to the client in all cases. When there is a failure, the
@@ -60,10 +60,10 @@ def parse_input(logger, obj, default_return=BaseApiModel):
     :param Logger logger: Instantiated logger object
     :param BaseModel obj: An object type based on a pydantic BaseModel to
                           attempt to parse.
-    :param BaseApiModel default_return: An object type that will be returned if
-                                        validation of obj fails. This object
-                                        must descend from BaseApiModel or
-                                        implement an error field of type str.
+    :param BaseApiView default_return: An object type that will be returned if
+                                       validation of obj fails. This object
+                                       must descend from BaseApiView or
+                                       implement an errors field of type dict.
     :returns: Instantiated object of type obj on success, or default_return
               on failure to parse.
     """
@@ -78,5 +78,9 @@ def parse_input(logger, obj, default_return=BaseApiModel):
             parsed_args = obj.model_validate_json(json.dumps(args.to_dict()))
     except ValidationError as e:
         logger.error(f"Validation error is: {e}")
-        parsed_args = default_return(error=str(e.errors()[0]))
+        errors_result = {}
+        errors_message = f"Errors detected: {e.error_count()}"
+        for error in e.errors():
+            errors_result[error.get("loc")[0]] = error.get("msg")
+        parsed_args = default_return(msg=errors_message, errors=errors_result)
     return parsed_args

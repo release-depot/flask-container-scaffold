@@ -133,18 +133,18 @@ example:
 
 This method is used to validate incoming data against a pydantic model. A
 custom return type can be specifed in the case of validation failure, but
-it must extend flask_container_scaffold.BaseApiModel, or minimally implement a
-field 'error' of type string, so that the parse_input method can properly
+it must extend flask_container_scaffold.BaseApiView, or minimally implement a
+field 'errors' of type dict, so that the parse_input method can properly
 populate it on a failure.
 
 As an example of how to use this with a custom return type, let us assume you
 have created the following classes:
 
 ```
-class ApiModelWithIntCode(BaseApiModel):
+class ApiViewWithIntCode(BaseApiView):
     code: int = 1
 
-class MyCustomInput(ApiModelWithIntCode):
+class MyCustomInput(ApiViewWithIntCode):
     code: int = 0
     name = str
 ```
@@ -154,7 +154,7 @@ object returned by parse_input. This could be implemented in, for example,
 your resource like this:
 
 ```
-model = parse_input(app.logger, MyCustomInput, ApiModelWithIntCode)
+model = parse_input(app.logger, MyCustomInput, ApiViewWithIntCode)
 if model.code != 1:
     # do something with MyCustomInput because we know it is valid
 else:
