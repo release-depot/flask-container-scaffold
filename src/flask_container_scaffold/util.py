@@ -57,6 +57,7 @@ def parse_input(logger, obj, default_return=BaseApiView):
     Parses incoming request, returns a serializable object to return
     to the client in all cases. When there is a failure, the
     object contains error information.
+
     :param Logger logger: Instantiated logger object
     :param BaseModel obj: An object type based on a pydantic BaseModel to
                           attempt to parse.
