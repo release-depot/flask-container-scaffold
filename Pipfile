@@ -9,3 +9,5 @@ flask-container-scaffold = {path = ".",extras = ["devbase","test","docs","dist"]
 [packages]
 flask-container-scaffold = {path = ".",editable = true}
 
+[celery]
+flask-container-scaffold = {file = ".", editable = true, extras = ["celery"]}
