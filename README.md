@@ -129,6 +129,51 @@ example:
         },
     })
 
+### CeleryScaffold
+
+This class has all of the same support as the above AppScaffold and takes
+the same parameters. Each CeleryScaffold instance has a flask_app and celery_app
+attribute that can be used in your project. More information about celery can
+be found [here](https://docs.celeryq.dev/en/stable/getting-started/introduction.html).
+Information on integrating celery with flask can be found in flask's
+[documentation](https://flask.palletsprojects.com/en/2.3.x/patterns/celery/).
+
+
+#### Installation
+
+    pip install flask-container-scaffold['celery']
+
+or
+
+    pipenv install --categories celery
+
+#### Basic Usage
+
+    celery_scaffold = CeleryScaffold(name=__name__, config=config)
+    flask_app = celery_scaffold.flask_app
+    celery_app = celery_scaffold.celery_app
+
+#### Basic Configuration
+
+All configuration is done via a 'CELERY' key in a configuration dictionary. The
+'CELERY' element itself is a dictionary of configuration items. More details on the 
+available configuration items for celery can be found [here](https://docs.celeryq.dev/en/stable/userguide/configuration.html).
+Below is a basic example in yaml format that uses a local rabbitmq broker, json serialization, and no result backend.
+
+```
+---
+
+CELERY:
+  broker: "pyamqp://guest@127.0.0.1//"
+  result_persistent: False
+  task_serializer: "json"
+  accept_content:
+    - "json"  # Ignore other content
+  result_serializer: "json"
+  result_expires: "300"
+  broker_connection_retry_on_startup: 'False'
+```
+
 ### Using the parse_input method
 
 This method is used to validate incoming data against a pydantic model. A
