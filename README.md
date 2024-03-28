@@ -129,6 +129,16 @@ example:
         },
     })
 
+### Using CeleryScaffold
+
+This class has all of the same support as the above AppScaffold and takes
+the same parameters. Each CeleryScaffold instance has a flask_app and celery_app
+attribute that can be used in your project
+
+    celery_scaffold = CeleryScaffold(name=__name__, config=config)
+    flask_app = celery_scaffold.flask_app
+    celery_app = celery_scaffold.celery_app
+
 ### Using the parse_input method
 
 This method is used to validate incoming data against a pydantic model. A
