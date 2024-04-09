@@ -8,7 +8,7 @@ AppConfigurator
    :show-inheritance:
 
 BaseScaffold
------------
+------------
 
 .. automodule:: flask_container_scaffold.base_scaffold
    :members:
@@ -26,7 +26,7 @@ AppScaffold
    :show-inheritance:
 
 CeleryScaffold
------------
+--------------
 
 .. automodule:: flask_container_scaffold.celery_scaffold
    :members:
