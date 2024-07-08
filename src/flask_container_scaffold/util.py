@@ -1,5 +1,4 @@
 import configparser
-import json
 
 from flask import request
 from pydantic import ValidationError
@@ -68,20 +67,58 @@ def parse_input(logger, obj, default_return=BaseApiView):
     :returns: Instantiated object of type obj on success, or default_return
               on failure to parse.
     """
+    args_dict = _preprocess_request()
     try:
-        if request.is_json:
-            parsed_args = obj.model_validate_json(json.dumps(request.json))
-        else:
-            if request.args:
-                args = request.args
-            else:
-                args = request.form
-            parsed_args = obj.model_validate_json(json.dumps(args.to_dict()))
+        # Unpack the dict into keyword arguments
+        parsed_args = obj(**args_dict)
     except ValidationError as e:
         logger.error(f"Validation error is: {e}")
         errors_result = {}
-        errors_message = f"Errors detected: {e.error_count()}"
+        errors_message = f"Errors detected: {len(e.errors())}"
         for error in e.errors():
             errors_result[error.get("loc")[0]] = error.get("msg")
         parsed_args = default_return(msg=errors_message, errors=errors_result)
     return parsed_args
+
+
+def _preprocess_request() -> dict:
+    """
+    Checks the various places in a request that could contain parameters, and
+    extracts them into a dictionary that can then be used for further parsing.
+    This dictionary should contain no duplicates, and chooses what to use based
+    on the following rules:
+
+    1. If a request contains both parameters embedded in the url (like
+    endpoint/1) AND
+      * json data, they will be preferred in this order:
+        - url-embedded
+        - json data
+      * query string and/or form data, they will be preferred in this order:
+        - url-embedded
+        - query string
+        - form data
+    2. If a request contains both json data AND either query strings or form
+    data, only the json will be parsed. However, Flask currently prevents this
+    from happening, as it will not allow a user to pass both types of data at
+    the same time. The `curl` command is similarly mutually exclusive.
+
+    :returns: dict containing the parsed parameters
+    """
+    processed_request = {}
+    # Check for URL Parameters
+    if request.view_args:
+        processed_request = request.view_args
+    # If the request has json input, parse that and combine with URL
+    # parameters, preferring the latter.
+    if request.is_json:
+        processed_request = {**request.json, **processed_request}
+    else:
+        # Check in query-string for additional parameters. Prefer any that were
+        # previously found in URL parameters.
+        if request.args:
+            processed_request = {**request.args.to_dict(), **processed_request}
+        # Check in form for additional parameters. Prefer any that were previously
+        # found in URL parameters or query-string.
+        if request.form:
+            processed_request = {**request.form.to_dict(), **processed_request}
+    return processed_request

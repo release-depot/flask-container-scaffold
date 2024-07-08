@@ -33,6 +33,7 @@ class FakeApiModelExtension(BaseApiView):
 
 
 class FakeModel(FakeApiModelExtension):
+    fake_id: int = 1
     code: int = 0
     name: str
 
@@ -41,6 +42,11 @@ class FakeModel2(FakeApiModelExtension):
     code: int = 0
     name: str
     status: str
+
+
+class ComplexInput(FakeModel):
+    field1: str
+    field2: str
 
 
 class TestParseInput:
@@ -78,22 +84,44 @@ class TestParseInput:
                 assert retval.errors.get(missing_attr) == 'Field required'
             assert isinstance(retval, BaseApiView)
 
-    @pytest.mark.parametrize("input_type,input_val",
-                             [('json', {'name': 'foo'}),
-                              ('qs', 'name=foo'),
-                              ('form', {'name': 'foo'})])
-    def test_parses_json(self, input_type, input_val, app):
+    @pytest.mark.parametrize("input_val",
+                             [{'name': 'foo'},
+                              {'name': 'foo', 'fake_id': 5}])
+    def test_parses_url_params_json(self, input_val, app):
         """
-        GIVEN a request with json, a query string or form data
+        GIVEN a request with a url parameter (such as endpoint/<id>)
         WHEN we call parse_input on that request
-        THEN we get a populated object returned, of the type requested.
+        THEN we get a populated object returned with <id> properly set
+        AND any json data appropriately parsed
         """
-        context = {'json': app.test_request_context(json=input_val),
-                   'qs': app.test_request_context(query_string=input_val),
-                   'form': app.test_request_context(data=input_val)}
-        with context.get(input_type):
+        with app.test_request_context('endpoint/2', json=input_val):
             retval = parse_input(app.logger, FakeModel)
+            assert retval.fake_id == 2
             assert retval.code == 0
             assert retval.errors == {}
             assert retval.name == 'foo'
             assert isinstance(retval, FakeModel)
+
+    @pytest.mark.parametrize("input_qs,input_form",
+                             [('field1=foo&fake_id=8',
+                               {'field2': 'foo', 'name': 'bob'}),
+                              ('field1=foo&name=bob',
+                               {'field2': 'foo', 'name': 'tim'}),
+                              ('field1=foo&name=bob&field2=foo',
+                               {})])
+    def test_parses_url_params_non_json(self, input_qs, input_form, app):
+        """"
+        GIVEN a request with a url parameter (such as endpoint/<id>)
+        WHEN we call parse_input on that request
+        THEN we get a populated object returned with <id> properly set
+        AND any query strings or forms appropriately parsed
+        """
+
+        with app.test_request_context('endpoint/2',
+                                      query_string=input_qs, data=input_form):
+            retval = parse_input(app.logger, ComplexInput)
+            assert retval.fake_id == 2
+            assert retval.code == 0
+            assert retval.errors == {}
+            assert retval.name == 'bob'
+            assert isinstance(retval, ComplexInput)
