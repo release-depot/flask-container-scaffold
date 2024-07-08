@@ -7,6 +7,11 @@ import pytest
 @pytest.fixture
 def app():
     app = Flask("testapp")
+
+    @app.route('/endpoint/<int:fake_id>')
+    def some_endpoint(fake_id):
+        pass
+
     yield app
 
 
